@@ -71,12 +71,15 @@ class _SpeechScreenState extends State<SpeechScreen> {
   bool _isListening = false;
   String _text = 'Press the button and start speaking';
   double _confidence = 1.0;
-  double _fontsize = 5;
+  double _fontsize;
+  double _initfontsize;
 
   @override
   void initState() {
     super.initState();
     _speech = stt.SpeechToText();
+    _initfontsize = 5;
+    _fontsize = _initfontsize;
   }
 
   @override
@@ -86,65 +89,90 @@ class _SpeechScreenState extends State<SpeechScreen> {
       topRight: Radius.circular(24.0),
     );
 
-    return Scaffold(
-      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
-      floatingActionButton: AvatarGlow(
-        animate: _isListening,
-        glowColor: Theme.of(context).primaryColor,
-        endRadius: 75.0,
-        duration: const Duration(milliseconds: 2000),
-        repeatPauseDuration: const Duration(milliseconds: 100),
-        repeat: true,
-        child: FloatingActionButton(
-          onPressed: _listen,
-          child: Icon(_isListening ? Icons.mic : Icons.mic_none),
-        ),
-      ),
-      body: SlidingUpPanel(
-        panel: Center(
-            child: Expanded(
-          child: new Slider(
-            value: _fontsize,
-            activeColor: Colors.blue,
-            inactiveColor: Colors.grey,
-            onChanged: (double s) {
-              setState(() {
-                _fontsize = s;
-              });
-            },
-            divisions: 10,
-            min: 0.0,
-            max: 10.0,
-          ),
-        )),
-        collapsed: Container(
-          decoration:
-              BoxDecoration(color: Colors.blueGrey, borderRadius: radius),
-          child: Center(
-            child: Text(
-              "Swipe for options",
-              style: TextStyle(color: Colors.white),
+    return new GestureDetector(
+        onScaleUpdate: (ScaleUpdateDetails details) {
+          setState(() {
+            double temp = _initfontsize * (.5 * details.scale);
+
+            if (temp > 10) {
+              _fontsize = 10;
+            } else if (temp < 1) {
+              _fontsize = 1;
+            } else {
+              _fontsize = temp;
+            }
+
+            print(
+                "scale=${details.scale} fontsize=$_fontsize ih=$_initfontsize");
+          });
+        },
+        onScaleEnd: (ScaleEndDetails details) {
+          setState(() {
+            _initfontsize = _fontsize;
+          });
+        },
+        child: new Scaffold(
+          backgroundColor: Color(0xff424242),
+          floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+          floatingActionButton: AvatarGlow(
+            animate: _isListening,
+            glowColor: Theme.of(context).primaryColor,
+            endRadius: 75.0,
+            duration: const Duration(milliseconds: 2000),
+            repeatPauseDuration: const Duration(milliseconds: 100),
+            repeat: true,
+            child: FloatingActionButton(
+              onPressed: _listen,
+              child: Icon(_isListening ? Icons.mic : Icons.mic_none),
             ),
           ),
-        ),
-        body: SingleChildScrollView(
-          reverse: true,
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(30.0, 30.0, 30.0, 150.0),
-            child: TextHighlight(
-              text: _text,
-              words: _highlights,
-              textStyle: TextStyle(
-                fontSize: (10 * _fontsize),
-                color: Colors.black,
-                fontWeight: FontWeight.w400,
+          body: SlidingUpPanel(
+            minHeight: 75, // height of collapsed menu
+            panel: Center(
+                child: Expanded(
+              child: new Slider(
+                value: _fontsize,
+                activeColor: Colors.blue,
+                inactiveColor: Colors.grey,
+                onChanged: (double s) {
+                  setState(() {
+                    _fontsize = s;
+                    _initfontsize = _fontsize;
+                  });
+                },
+                divisions: 10,
+                min: 1,
+                max: 10.0,
+              ),
+            )),
+            collapsed: Container(
+              decoration:
+                  BoxDecoration(color: Colors.grey, borderRadius: radius),
+              child: Center(
+                child: Text(
+                  "Swipe for options",
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ),
+            body: SingleChildScrollView(
+              reverse: true,
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(30.0, 30.0, 30.0, 150.0),
+                child: TextHighlight(
+                  text: _text,
+                  words: _highlights,
+                  textStyle: TextStyle(
+                    fontSize: (10 * _fontsize),
+                    color: Colors.white,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ),
+            ),
+            borderRadius: radius,
           ),
-        ),
-        borderRadius: radius,
-      ),
-    );
+        ));
   }
 
   // @override
