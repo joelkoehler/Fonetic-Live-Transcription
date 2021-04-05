@@ -102,37 +102,34 @@ class _SpeechScreenState extends State<SpeechScreen> {
         children: [
           Expanded(
             child: Container(
-            padding: const EdgeInsets.fromLTRB(30.0, 30.0, 30.0, 30.0),
-            child: TextHighlight(
-              text: _text,
-              words: _highlights,
-              textStyle: TextStyle(
-                fontSize: (10 * _fontsize),
-                color: Colors.black,
-                fontWeight: FontWeight.w400,
+              padding: const EdgeInsets.fromLTRB(30.0, 30.0, 30.0, 30.0),
+              child: TextHighlight(
+                text: _text,
+                words: _highlights,
+                textStyle: TextStyle(
+                  fontSize: (10 * _fontsize),
+                  color: Colors.black,
+                  fontWeight: FontWeight.w400,
+                ),
               ),
             ),
           ),
-          ),
-
           Expanded(
             child: new Slider(
-                value: _fontsize,
-                activeColor: Colors.white,
-                inactiveColor: Colors.white,
-                onChanged: (double s) {
-                  setState(() {
-                    _fontsize = s;
-                  });
-                },
+              value: _fontsize,
+              activeColor: Colors.blue,
+              inactiveColor: Colors.grey,
+              onChanged: (double s) {
+                setState(() {
+                  _fontsize = s;
+                });
+              },
               divisions: 10,
               min: 0.0,
               max: 10.0,
             ),
           )
-
         ],
-        
       ),
     );
   }
