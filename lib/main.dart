@@ -70,6 +70,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
   bool _isListening = false;
   String _text = 'Press the button and start speaking';
   double _confidence = 1.0;
+  double _fontsize = 5;
 
   @override
   void initState() {
@@ -96,20 +97,42 @@ class _SpeechScreenState extends State<SpeechScreen> {
           child: Icon(_isListening ? Icons.mic : Icons.mic_none),
         ),
       ),
-      body: SingleChildScrollView(
-        reverse: true,
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(30.0, 30.0, 30.0, 150.0),
-          child: TextHighlight(
-            text: _text,
-            words: _highlights,
-            textStyle: const TextStyle(
-              fontSize: 32.0,
-              color: Colors.black,
-              fontWeight: FontWeight.w400,
+      body: Column(
+        //reverse: true,
+        children: [
+          Expanded(
+            child: Container(
+            padding: const EdgeInsets.fromLTRB(30.0, 30.0, 30.0, 30.0),
+            child: TextHighlight(
+              text: _text,
+              words: _highlights,
+              textStyle: TextStyle(
+                fontSize: (10 * _fontsize),
+                color: Colors.black,
+                fontWeight: FontWeight.w400,
+              ),
             ),
           ),
-        ),
+          ),
+
+          Expanded(
+            child: new Slider(
+                value: _fontsize,
+                activeColor: Colors.white,
+                inactiveColor: Colors.white,
+                onChanged: (double s) {
+                  setState(() {
+                    _fontsize = s;
+                  });
+                },
+              divisions: 10,
+              min: 0.0,
+              max: 10.0,
+            ),
+          )
+
+        ],
+        
       ),
     );
   }
