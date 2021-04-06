@@ -73,6 +73,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
   double _confidence = 1.0;
   double _fontsize;
   double _initfontsize;
+  bool _darkmode;
 
   @override
   void initState() {
@@ -80,6 +81,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
     _speech = stt.SpeechToText();
     _initfontsize = 5;
     _fontsize = _initfontsize;
+    _darkmode = true;
   }
 
   @override
@@ -89,10 +91,25 @@ class _SpeechScreenState extends State<SpeechScreen> {
       topRight: Radius.circular(24.0),
     );
 
+    // onScaleUpdate: (ScaleUpdateDetails details) {
+    //   print(details);
+    //   setState(() => _scale = _previousScale * details.scale);
+    // },
+    // onScaleEnd: (ScaleEndDetails details) {
+    //   print(details);
+    //   // See comment above
+    //   _previousScale = null;
+    // },
+
     return new GestureDetector(
+        onScaleStart: (ScaleStartDetails details) {
+          setState(() {
+            _initfontsize = _fontsize;
+          });
+        },
         onScaleUpdate: (ScaleUpdateDetails details) {
           setState(() {
-            double temp = _initfontsize * (.5 * details.scale);
+            double temp = _initfontsize * details.scale;
 
             if (temp > 10) {
               _fontsize = 10;
@@ -112,7 +129,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
           });
         },
         child: new Scaffold(
-          backgroundColor: Color(0xff424242),
+          backgroundColor: Color(_darkmode ? 0xff424242 : 0xFFFFFFFF),
           floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
           floatingActionButton: AvatarGlow(
             animate: _isListening,
@@ -127,30 +144,46 @@ class _SpeechScreenState extends State<SpeechScreen> {
             ),
           ),
           body: SlidingUpPanel(
+            backdropEnabled: true,
+            color: Color(_darkmode ? 0xff424242 : 0xFFFFFFFF),
+
             minHeight: 75, // height of collapsed menu
             panel: Center(
-                child: Expanded(
-              child: new Slider(
-                value: _fontsize,
-                activeColor: Colors.blue,
-                inactiveColor: Colors.grey,
-                onChanged: (double s) {
-                  setState(() {
-                    _fontsize = s;
-                    _initfontsize = _fontsize;
-                  });
-                },
-                divisions: 10,
-                min: 1,
-                max: 10.0,
-              ),
+                child: Column(
+              children: [
+                new Switch(
+                  value: _darkmode,
+                  onChanged: (value) {
+                    setState(() {
+                      _darkmode = value;
+                      print(_darkmode);
+                    });
+                  },
+                  activeTrackColor: Colors.lightBlue,
+                  activeColor: Colors.blue,
+                ),
+                new Slider(
+                  value: _fontsize,
+                  activeColor: Colors.blue,
+                  inactiveColor: Colors.grey,
+                  onChanged: (double s) {
+                    setState(() {
+                      _fontsize = s;
+                      _initfontsize = _fontsize;
+                    });
+                  },
+                  divisions: 10,
+                  min: 1,
+                  max: 10.0,
+                ),
+              ],
             )),
             collapsed: Container(
               decoration:
                   BoxDecoration(color: Colors.grey, borderRadius: radius),
               child: Center(
                 child: Text(
-                  "Swipe for options",
+                  "Swipe up for options",
                   style: TextStyle(color: Colors.white),
                 ),
               ),
@@ -164,7 +197,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
                   words: _highlights,
                   textStyle: TextStyle(
                     fontSize: (10 * _fontsize),
-                    color: Colors.white,
+                    color: Color(_darkmode ? 0xFFFFFFFF : 0xFF000000),
                     fontWeight: FontWeight.w400,
                   ),
                 ),
