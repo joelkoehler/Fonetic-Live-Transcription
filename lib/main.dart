@@ -91,16 +91,6 @@ class _SpeechScreenState extends State<SpeechScreen> {
       topRight: Radius.circular(24.0),
     );
 
-    // onScaleUpdate: (ScaleUpdateDetails details) {
-    //   print(details);
-    //   setState(() => _scale = _previousScale * details.scale);
-    // },
-    // onScaleEnd: (ScaleEndDetails details) {
-    //   print(details);
-    //   // See comment above
-    //   _previousScale = null;
-    // },
-
     return new GestureDetector(
         onScaleStart: (ScaleStartDetails details) {
           setState(() {
@@ -133,12 +123,14 @@ class _SpeechScreenState extends State<SpeechScreen> {
           floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
           floatingActionButton: AvatarGlow(
             animate: _isListening,
-            glowColor: Theme.of(context).primaryColor,
+            //glowColor: Theme.of(context).primaryColor,
+            glowColor: Color(_isListening ? 0xFF44336 : 0xFF2196F3),
             endRadius: 75.0,
             duration: const Duration(milliseconds: 2000),
             repeatPauseDuration: const Duration(milliseconds: 100),
             repeat: true,
             child: FloatingActionButton(
+              backgroundColor: Color(_isListening ? 0xFFF44336 : 0xFF2196F3),
               onPressed: _listen,
               child: Icon(_isListening ? Icons.mic : Icons.mic_none),
             ),
@@ -149,42 +141,46 @@ class _SpeechScreenState extends State<SpeechScreen> {
 
             minHeight: 75, // height of collapsed menu
             panel: Center(
-                child: Column(
-              children: [
-                new Switch(
-                  value: _darkmode,
-                  onChanged: (value) {
-                    setState(() {
-                      _darkmode = value;
-                      print(_darkmode);
-                    });
-                  },
-                  activeTrackColor: Colors.lightBlue,
-                  activeColor: Colors.blue,
-                ),
-                new Slider(
-                  value: _fontsize,
-                  activeColor: Colors.blue,
-                  inactiveColor: Colors.grey,
-                  onChanged: (double s) {
-                    setState(() {
-                      _fontsize = s;
-                      _initfontsize = _fontsize;
-                    });
-                  },
-                  divisions: 10,
-                  min: 1,
-                  max: 10.0,
-                ),
-              ],
+                child: Padding(
+              padding: const EdgeInsets.fromLTRB(15.0, 75.0, 30.0, 30.0),
+              child: Column(
+                children: [
+                  new Switch(
+                    value: _darkmode,
+                    onChanged: (value) {
+                      setState(() {
+                        _darkmode = value;
+                        print(_darkmode);
+                      });
+                    },
+                    activeTrackColor: Colors.lightBlue,
+                    activeColor: Colors.blue,
+                  ),
+                  new Slider(
+                    value: _fontsize,
+                    activeColor: Colors.blue,
+                    inactiveColor: Colors.grey,
+                    onChanged: (double s) {
+                      setState(() {
+                        _fontsize = s;
+                        _initfontsize = _fontsize;
+                      });
+                    },
+                    divisions: 10,
+                    min: 1,
+                    max: 10.0,
+                  ),
+                ],
+              ),
             )),
             collapsed: Container(
               decoration:
                   BoxDecoration(color: Colors.grey, borderRadius: radius),
               child: Center(
-                child: Text(
-                  "Swipe up for options",
-                  style: TextStyle(color: Colors.white),
+                child: Icon(
+                  IconData(0xe7ef, fontFamily: 'MaterialIcons'),
+                  color: Colors.white,
+                  //style: TextStyle(color: Colors.white),
                 ),
               ),
             ),
@@ -207,62 +203,6 @@ class _SpeechScreenState extends State<SpeechScreen> {
           ),
         ));
   }
-
-  // @override
-  // Widget build(BuildContext context) {
-  //   return Scaffold(
-  //     // appBar: AppBar(
-  //     //   title: Text('Confidence: ${(_confidence * 100.0).toStringAsFixed(1)}%'),
-  //     // ),
-  //     floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
-  //     floatingActionButton: AvatarGlow(
-  //       animate: _isListening,
-  //       glowColor: Theme.of(context).primaryColor,
-  //       endRadius: 75.0,
-  //       duration: const Duration(milliseconds: 2000),
-  //       repeatPauseDuration: const Duration(milliseconds: 100),
-  //       repeat: true,
-  //       child: FloatingActionButton(
-  //         onPressed: _listen,
-  //         child: Icon(_isListening ? Icons.mic : Icons.mic_none),
-  //       ),
-  //     ),
-  //     body: Column(
-  //       //reverse: true,
-  //       children: [
-  //         Expanded(
-  //           child: Container(
-  //             padding: const EdgeInsets.fromLTRB(30.0, 30.0, 30.0, 30.0),
-  //             child: TextHighlight(
-  //               text: _text,
-  //               words: _highlights,
-  //               textStyle: TextStyle(
-  //                 fontSize: (10 * _fontsize),
-  //                 color: Colors.black,
-  //                 fontWeight: FontWeight.w400,
-  //               ),
-  //             ),
-  //           ),
-  //         ),
-  //         Expanded(
-  //           child: new Slider(
-  //             value: _fontsize,
-  //             activeColor: Colors.blue,
-  //             inactiveColor: Colors.grey,
-  //             onChanged: (double s) {
-  //               setState(() {
-  //                 _fontsize = s;
-  //               });
-  //             },
-  //             divisions: 10,
-  //             min: 0.0,
-  //             max: 10.0,
-  //           ),
-  //         )
-  //       ],
-  //     ),
-  //   );
-  // }
 
   void _listen() async {
     if (!_isListening) {
