@@ -148,7 +148,14 @@ class _SpeechScreenState extends State<SpeechScreen> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 40),
                 child: Center(
-                  child: Text("(or pinch/zoom text)"),
+                  child: Text(
+                    "(or pinch/zoom text)",
+                    style: TextStyle(
+                      fontSize: (12),
+                      color: Color(_darkmode ? 0xFFFFFFFF : 0xFF000000),
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
                 ),
               ),
               Padding(
