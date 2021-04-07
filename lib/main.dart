@@ -129,7 +129,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.only(bottom: 40),
+                padding: const EdgeInsets.only(bottom: 2),
                 child: new Slider(
                   value: _fontsize,
                   activeColor: Colors.blue,
@@ -143,6 +143,12 @@ class _SpeechScreenState extends State<SpeechScreen> {
                   divisions: 9,
                   min: 1,
                   max: 10.0,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 40),
+                child: Center(
+                  child: Text("(or pinch/zoom text)"),
                 ),
               ),
               Padding(
@@ -166,6 +172,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
                       },
                       child: Icon(
                         Icons.content_copy,
+                        size: 22,
                         //color: Colors.black,
                       ),
                     ),
