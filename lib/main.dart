@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:avatar_glow/avatar_glow.dart';
 import 'package:flutter/material.dart';
 import 'package:highlight_text/highlight_text.dart';
@@ -49,6 +51,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
   double _fontsize;
   double _initfontsize;
   bool _darkmode;
+  Timer timer;
 
   @override
   void initState() {
@@ -57,6 +60,12 @@ class _SpeechScreenState extends State<SpeechScreen> {
     _initfontsize = 3;
     _fontsize = _initfontsize;
     _darkmode = true; // grab from prefs
+  }
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -100,6 +109,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
                       Color(_darkmode ? 0xff424242 : 0xFFFFFFFF), //Colors.grey,
                   child: ListTile(
                     onTap: () {
+                      vibrate();
                       setState(() {
                         if (_darkmode == true) {
                           _darkmode = false;
@@ -117,7 +127,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
                       ),
                     ),
                     leading: Icon(
-                      Icons.lightbulb,
+                      Icons.lightbulb_outline,
                       color: Color(_darkmode ? 0xFFFFFFFF : 0xFF000000),
                     ),
                     trailing: new Switch(
@@ -126,6 +136,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
                         setState(() {
                           _darkmode = value;
                           print(_darkmode);
+                          vibrate();
                         });
                       },
                       activeTrackColor: Colors.lightBlue,
@@ -159,7 +170,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
                     children: [
                       ListTile(
                         onTap: () {
-                          //open edit profile
+                          vibrate();
                         },
                         title: Text(
                           "Typeface",
@@ -226,6 +237,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
                             setState(() {
                               _fontsize = s;
                               _initfontsize = _fontsize;
+                              vibrate();
                             });
                           },
                           divisions: 9,
@@ -262,17 +274,20 @@ class _SpeechScreenState extends State<SpeechScreen> {
                   child: ListTile(
                     onTap: () {
                       Clipboard.setData(new ClipboardData(text: _text));
+                      vibrate();
                     },
                     title: Text(
                       "Tap to copy text",
                       style: TextStyle(
-                        color: Color(_darkmode ? 0xFFFFFFFF : 0xFF000000),
+                        color: Colors
+                            .white, //Color(_darkmode ? 0xFFFFFFFF : 0xFF000000),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                     leading: Icon(
                       Icons.content_copy,
-                      color: Color(_darkmode ? 0xFFFFFFFF : 0xFF000000),
+                      color: Colors
+                          .white, //Color(_darkmode ? 0xFFFFFFFF : 0xFF000000),
                     ),
                   ),
                 ),
@@ -293,7 +308,6 @@ class _SpeechScreenState extends State<SpeechScreen> {
                     Icon(
                       IconData(0xe7ef, fontFamily: 'MaterialIcons'),
                       color: Colors.white,
-                      //style: TextStyle(color: Colors.white),
                     ),
                     Text(
                       'options',
@@ -331,41 +345,43 @@ class _SpeechScreenState extends State<SpeechScreen> {
           },
           child: Stack(
             children: [
-              (_welcome || _text.length < 1)
+              (_welcome && _text.length < 1)
                   ? Center(
                       child: Text(
-                      "hi.",
+                      "hi there.",
                       style: TextStyle(
                           color: Color(_darkmode ? 0xFFFFFFFF : 0xFF000000),
                           fontSize: 30),
                     ))
-                  : Expanded(
-                      child: SingleChildScrollView(
-                        reverse: true,
-                        child: Container(
-                          alignment: Alignment.center,
-                          //color: Colors.red,
-                          padding: const EdgeInsets.fromLTRB(
-                              20.0, 20.0, 20.0, 120.0),
-                          child: TextHighlight(
-                            text: _text,
-                            words: _highlights,
-                            textStyle: TextStyle(
-                              fontSize: (10 * _fontsize),
-                              color: Color(_darkmode ? 0xFFFFFFFF : 0xFF000000),
-                              fontWeight: FontWeight.w400,
+                  : Flex(
+                      direction: Axis.horizontal,
+                      children: [
+                        Expanded(
+                          child: SingleChildScrollView(
+                            reverse: true,
+                            child: Container(
+                              alignment: Alignment.center,
+                              //color: Colors.red,
+                              padding: const EdgeInsets.fromLTRB(
+                                  20.0, 50.0, 20.0, 120.0),
+                              child: Text(
+                                _text,
+                                style: TextStyle(
+                                  fontSize: (10 * _fontsize),
+                                  color: Color(
+                                      _darkmode ? 0xFFFFFFFF : 0xFF000000),
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                      ),
+                      ],
                     ),
               Positioned(
                 bottom: 0,
                 right: 0,
                 child: Container(
-                  //alignment: Alignment.bottomRight,
-                  //color: Colors.green,
-                  //height: 200,
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(60.0, 60.0, 20.0, 30.0),
                     child: AvatarGlow(
@@ -380,17 +396,13 @@ class _SpeechScreenState extends State<SpeechScreen> {
                       child: FloatingActionButton.extended(
                         backgroundColor:
                             Color(_isListening ? 0xFFF44336 : 0xFF2196F3),
-                        onPressed: _listen,
+                        onPressed: () {
+                          _listen();
+                          vibrate();
+                        },
                         label:
                             Text(_isListening ? "Tap to stop" : "Tap to begin"),
                       ),
-
-                      // child: FloatingActionButton(
-                      //   backgroundColor:
-                      //       Color(_isListening ? 0xFFF44336 : 0xFF2196F3),
-                      //   onPressed: _listen,
-                      //   child: Icon(_isListening ? Icons.mic : Icons.mic_none),
-                      // ),
                     ),
                   ),
                 ),
@@ -404,26 +416,48 @@ class _SpeechScreenState extends State<SpeechScreen> {
   }
 
   void _listen() async {
-    _welcome = false;
     if (!_isListening) {
       bool available = await _speech.initialize(
         onStatus: (val) => print('onStatus: $val'),
         onError: (val) => print('onError: $val'),
       );
+
       if (available) {
         setState(() => _isListening = true);
-        _speech.listen(
-          onResult: (val) => setState(() {
-            _text = val.recognizedWords;
-            if (val.hasConfidenceRating && val.confidence > 0) {
-              _confidence = val.confidence;
-            }
-          }),
-        );
+        oneMinuteListen();
       }
     } else {
       setState(() => _isListening = false);
       _speech.stop();
     }
   }
+
+  void oneMinuteListen() {
+    if (_isListening) {
+      _speech.listen(
+        listenFor: Duration(seconds: 55),
+        onResult: (val) => setState(() {
+          _text = val.recognizedWords;
+          if (_text.length > 0) {
+            _welcome = false;
+          }
+          // if (_text.length > 0) {
+          //   _welcome = false;
+          // }
+          timer =
+              Timer.periodic(Duration(seconds: 55), (t) => oneMinuteListen());
+        }),
+      );
+    }
+  }
+
+  static Future<void> vibrate() async {
+    await SystemChannels.platform.invokeMethod<void>('HapticFeedback.vibrate');
+  }
 }
+
+// TODO
+// permission
+// preferences
+// fony family
+// haptics
