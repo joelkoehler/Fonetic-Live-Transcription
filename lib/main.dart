@@ -51,6 +51,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
   double _fontsize;
   double _initfontsize;
   bool _darkmode;
+  double _welcomeOpacity;
   Timer timer;
 
   @override
@@ -59,7 +60,9 @@ class _SpeechScreenState extends State<SpeechScreen> {
     _speech = stt.SpeechToText();
     _initfontsize = 3;
     _fontsize = _initfontsize;
-    _darkmode = true; // grab from prefs
+    _darkmode = false; // grab from prefs
+    _welcomeOpacity = 1;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _changeOpacity());
   }
 
   @override
@@ -68,13 +71,16 @@ class _SpeechScreenState extends State<SpeechScreen> {
     super.dispose();
   }
 
+  void _changeOpacity() {
+    setState(() => _welcomeOpacity = _welcomeOpacity == 0 ? 1.0 : 0.0);
+  }
+
   @override
   Widget build(BuildContext context) {
     BorderRadiusGeometry radius = BorderRadius.only(
       topLeft: Radius.circular(24.0),
       topRight: Radius.circular(24.0),
     );
-
     return new Scaffold(
       backgroundColor: Color(_darkmode ? 0xff424242 : 0xFFFFFFFF),
       body: SlidingUpPanel(
@@ -347,12 +353,17 @@ class _SpeechScreenState extends State<SpeechScreen> {
             children: [
               (_welcome && _text.length < 1)
                   ? Center(
-                      child: Text(
-                      "hi there.",
-                      style: TextStyle(
-                          color: Color(_darkmode ? 0xFFFFFFFF : 0xFF000000),
-                          fontSize: 30),
-                    ))
+                      child: AnimatedOpacity(
+                          curve: Curves.decelerate,
+                          duration: const Duration(seconds: 3),
+                          opacity: _welcomeOpacity,
+                          child: Text(
+                            "hi there.",
+                            style: TextStyle(
+                                color:
+                                    Color(_darkmode ? 0xFFFFFFFF : 0xFF000000),
+                                fontSize: 30),
+                          )))
                   : Flex(
                       direction: Axis.horizontal,
                       children: [
@@ -441,9 +452,6 @@ class _SpeechScreenState extends State<SpeechScreen> {
           if (_text.length > 0) {
             _welcome = false;
           }
-          // if (_text.length > 0) {
-          //   _welcome = false;
-          // }
           timer =
               Timer.periodic(Duration(seconds: 55), (t) => oneMinuteListen());
         }),
@@ -456,8 +464,6 @@ class _SpeechScreenState extends State<SpeechScreen> {
   }
 }
 
-// TODO
-// permission
+// TODO:
 // preferences
 // fony family
-// haptics
