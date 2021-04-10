@@ -452,7 +452,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
                                       color: Color(
                                           _darkmode ? 0xFFFFFFFF : 0xFF000000),
                                       //fontWeight: FontWeight.w500,
-                                      fontSize: 30),
+                                      fontSize: (10 * _fontsize)),
                                 ),
                               ),
                             ),
