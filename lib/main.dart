@@ -1,12 +1,14 @@
 import 'dart:async';
-
 import 'package:avatar_glow/avatar_glow.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:highlight_text/highlight_text.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() {
   runApp(MyApp());
@@ -47,12 +49,15 @@ class _SpeechScreenState extends State<SpeechScreen> {
   bool _isListening = false;
   String _text = '';
   bool _welcome = true;
-  double _confidence = 1.0;
+  // double _confidence = 1.0;
   double _fontsize;
   double _initfontsize;
   bool _darkmode;
+  String _font;
   double _welcomeOpacity;
   Timer timer;
+  int selected_item;
+  PanelController _pc = new PanelController();
 
   @override
   void initState() {
@@ -60,9 +65,56 @@ class _SpeechScreenState extends State<SpeechScreen> {
     _speech = stt.SpeechToText();
     _initfontsize = 3;
     _fontsize = _initfontsize;
-    _darkmode = false; // grab from prefs
+    _darkmode = true;
+    _font = 'Lato';
     _welcomeOpacity = 1;
+    selected_item = 0;
+    getFontPref();
     WidgetsBinding.instance.addPostFrameCallback((_) => _changeOpacity());
+  }
+
+  Future<bool> getDarkMode() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool dark = prefs.getBool('dark');
+
+    if (dark != null) {
+      _darkmode = dark;
+    } else {
+      _darkmode = false;
+      prefs.setBool('dark', false);
+    }
+    setState(() {});
+    return dark;
+  }
+
+  setDarkMode(bool value) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('dark', value);
+    setState(() {
+      _darkmode = value;
+    });
+  }
+
+  Future<String> getFontPref() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String font = prefs.getString('font');
+
+    if (font != null) {
+      _font = font;
+    } else {
+      _font = 'Lato';
+      prefs.setString('font', 'Lato');
+    }
+    setState(() {});
+    return font;
+  }
+
+  setFontPref(String name) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('font', name);
+    // setState(() {
+    //   _font = name;
+    // });
   }
 
   @override
@@ -84,9 +136,9 @@ class _SpeechScreenState extends State<SpeechScreen> {
     return new Scaffold(
       backgroundColor: Color(_darkmode ? 0xff424242 : 0xFFFFFFFF),
       body: SlidingUpPanel(
+        controller: _pc,
         backdropEnabled: true,
         color: Color(_darkmode ? 0xff424242 : 0xFFFFFFFF),
-
         minHeight: 50, // height of collapsed menu
         panel: Center(
             child: Padding(
@@ -111,46 +163,30 @@ class _SpeechScreenState extends State<SpeechScreen> {
                   elevation: 8.0,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.0)),
-                  color:
-                      Color(_darkmode ? 0xff424242 : 0xFFFFFFFF), //Colors.grey,
+                  color: Colors.blue[
+                      500], //Colors.blueGrey[300], //Color(_darkmode ? 0xff424242 : 0xFFFFFFFF),
                   child: ListTile(
                     onTap: () {
+                      Clipboard.setData(new ClipboardData(text: _text));
                       vibrate();
-                      setState(() {
-                        if (_darkmode == true) {
-                          _darkmode = false;
-                        } else {
-                          _darkmode = true;
-                        }
-                        print(_darkmode);
-                      });
                     },
                     title: Text(
-                      "Dark theme",
+                      "Tap to copy text",
                       style: TextStyle(
-                        color: Color(_darkmode ? 0xFFFFFFFF : 0xFF000000),
+                        color: Colors
+                            .white, //Color(_darkmode ? 0xFFFFFFFF : 0xFF000000),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                     leading: Icon(
-                      Icons.lightbulb_outline,
-                      color: Color(_darkmode ? 0xFFFFFFFF : 0xFF000000),
-                    ),
-                    trailing: new Switch(
-                      value: _darkmode,
-                      onChanged: (value) {
-                        setState(() {
-                          _darkmode = value;
-                          print(_darkmode);
-                          vibrate();
-                        });
-                      },
-                      activeTrackColor: Colors.lightBlue,
-                      activeColor: Colors.blue,
+                      Icons.content_copy,
+                      color: Colors
+                          .white, //Color(_darkmode ? 0xFFFFFFFF : 0xFF000000),
                     ),
                   ),
                 ),
               ),
+
               // Container(
               //   padding: const EdgeInsets.fromLTRB(30.0, 10.0, 0.0, 10.0),
               //   alignment: Alignment.topLeft,
@@ -164,44 +200,6 @@ class _SpeechScreenState extends State<SpeechScreen> {
               //   ),
               // ),
               //
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 0.0),
-                child: Card(
-                  elevation: 8.0,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0)),
-                  color:
-                      Color(_darkmode ? 0xff424242 : 0xFFFFFFFF), //Colors.grey,
-                  child: Column(
-                    children: [
-                      ListTile(
-                        onTap: () {
-                          vibrate();
-                        },
-                        title: Text(
-                          "Typeface",
-                          style: TextStyle(
-                            color: Color(_darkmode ? 0xFFFFFFFF : 0xFF000000),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        leading: Icon(
-                          Icons.font_download_outlined,
-                          color: Color(_darkmode ? 0xFFFFFFFF : 0xFF000000),
-                        ),
-                        trailing: Text(
-                          "_fontfamily" + " >",
-                          style: TextStyle(
-                            fontSize: (12),
-                            color: Color(_darkmode ? 0xFFFFFFFF : 0xFF000000),
-                            //fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 0.0),
                 child: Card(
@@ -268,6 +266,50 @@ class _SpeechScreenState extends State<SpeechScreen> {
                   ),
                 ),
               ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 0.0),
+                child: Card(
+                  elevation: 8.0,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0)),
+                  color:
+                      Color(_darkmode ? 0xff424242 : 0xFFFFFFFF), //Colors.grey,
+                  child: Column(
+                    children: [
+                      ListTile(
+                        onTap: () async {
+                          vibrate();
+                          await showModalBottomSheet<int>(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return _buildItemPicker();
+                            },
+                          );
+                        },
+                        title: Text(
+                          "Typeface",
+                          style: TextStyle(
+                            color: Color(_darkmode ? 0xFFFFFFFF : 0xFF000000),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        leading: Icon(
+                          Icons.font_download_outlined,
+                          color: Color(_darkmode ? 0xFFFFFFFF : 0xFF000000),
+                        ),
+                        trailing: Text(
+                          items[selected_item],
+                          style: TextStyle(
+                            fontSize: (12),
+                            color: Color(_darkmode ? 0xFFFFFFFF : 0xFF000000),
+                            //fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
 
               Padding(
                 padding: const EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 0.0),
@@ -275,25 +317,45 @@ class _SpeechScreenState extends State<SpeechScreen> {
                   elevation: 8.0,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.0)),
-                  color: Colors.blue[
-                      500], //Colors.blueGrey[300], //Color(_darkmode ? 0xff424242 : 0xFFFFFFFF),
+                  color:
+                      Color(_darkmode ? 0xff424242 : 0xFFFFFFFF), //Colors.grey,
                   child: ListTile(
                     onTap: () {
-                      Clipboard.setData(new ClipboardData(text: _text));
                       vibrate();
+                      setState(() {
+                        if (_darkmode == true) {
+                          //_darkmode = false;
+                          setDarkMode(false);
+                        } else {
+                          //_darkmode = true;
+                          setDarkMode(true);
+                        }
+                        print(_darkmode);
+                      });
                     },
                     title: Text(
-                      "Tap to copy text",
+                      //fontFamily: 'Roboto',
+                      "Dark theme",
                       style: TextStyle(
-                        color: Colors
-                            .white, //Color(_darkmode ? 0xFFFFFFFF : 0xFF000000),
+                        color: Color(_darkmode ? 0xFFFFFFFF : 0xFF000000),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                     leading: Icon(
-                      Icons.content_copy,
-                      color: Colors
-                          .white, //Color(_darkmode ? 0xFFFFFFFF : 0xFF000000),
+                      Icons.lightbulb_outline,
+                      color: Color(_darkmode ? 0xFFFFFFFF : 0xFF000000),
+                    ),
+                    trailing: new Switch(
+                      value: _darkmode,
+                      onChanged: (value) {
+                        setState(() {
+                          setDarkMode(value);
+                          //_darkmode = value;
+                          vibrate();
+                        });
+                      },
+                      activeTrackColor: Colors.lightBlue,
+                      activeColor: Colors.blue,
                     ),
                   ),
                 ),
@@ -301,24 +363,29 @@ class _SpeechScreenState extends State<SpeechScreen> {
             ],
           ),
         )),
-        collapsed: Container(
-          decoration: BoxDecoration(color: Colors.grey, borderRadius: radius),
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(0, 0, 0, 5),
-              child: Shimmer.fromColors(
-                baseColor: Colors.white, //Color(0xFFE3F2FD),
-                highlightColor: Colors.pink[50], //Colors.blue[200],
-                child: Column(
-                  children: [
-                    Icon(
-                      IconData(0xe7ef, fontFamily: 'MaterialIcons'),
-                      color: Colors.white,
-                    ),
-                    Text(
-                      'options',
-                    ),
-                  ],
+        collapsed: InkWell(
+          onTap: () {
+            _pc.open();
+          },
+          child: Container(
+            decoration: BoxDecoration(color: Colors.grey, borderRadius: radius),
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(0, 0, 0, 5),
+                child: Shimmer.fromColors(
+                  baseColor: Colors.white, //Color(0xFFE3F2FD),
+                  highlightColor: Colors.pink[50], //Colors.blue[200],
+                  child: Column(
+                    children: [
+                      Icon(
+                        IconData(0xe7ef, fontFamily: 'MaterialIcons'),
+                        color: Colors.white,
+                      ),
+                      Text(
+                        'options',
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -358,10 +425,12 @@ class _SpeechScreenState extends State<SpeechScreen> {
                           duration: const Duration(seconds: 3),
                           opacity: _welcomeOpacity,
                           child: Text(
+                            //GoogleFonts.tradeWinds()
                             "hi there.",
                             style: TextStyle(
                                 color:
                                     Color(_darkmode ? 0xFFFFFFFF : 0xFF000000),
+                                fontWeight: FontWeight.w500,
                                 fontSize: 30),
                           )))
                   : Flex(
@@ -371,17 +440,19 @@ class _SpeechScreenState extends State<SpeechScreen> {
                           child: SingleChildScrollView(
                             reverse: true,
                             child: Container(
-                              alignment: Alignment.center,
+                              alignment: Alignment.topLeft,
                               //color: Colors.red,
                               padding: const EdgeInsets.fromLTRB(
                                   20.0, 50.0, 20.0, 120.0),
                               child: Text(
                                 _text,
-                                style: TextStyle(
-                                  fontSize: (10 * _fontsize),
-                                  color: Color(
-                                      _darkmode ? 0xFFFFFFFF : 0xFF000000),
-                                  fontWeight: FontWeight.w400,
+                                style: GoogleFonts.getFont(
+                                  _font,
+                                  textStyle: TextStyle(
+                                      color: Color(
+                                          _darkmode ? 0xFFFFFFFF : 0xFF000000),
+                                      //fontWeight: FontWeight.w500,
+                                      fontSize: 30),
                                 ),
                               ),
                             ),
@@ -461,6 +532,60 @@ class _SpeechScreenState extends State<SpeechScreen> {
 
   static Future<void> vibrate() async {
     await SystemChannels.platform.invokeMethod<void>('HapticFeedback.vibrate');
+  }
+
+  List<String> items = [
+    "Lato",
+    "Oswald",
+    "Anton",
+  ];
+
+  Widget _buildItemPicker() {
+    return Container(
+        color: Color(_darkmode ? 0xff424242 : 0xFFFFFFFF),
+        height: 250,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 20),
+              child: Text(
+                "Typeface",
+                style: TextStyle(
+                  fontSize: 20.0,
+                  fontWeight: FontWeight.bold,
+                  color: Color(_darkmode ? 0xFFFFFFFF : 0xFF000000),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: CupertinoPicker(
+                  itemExtent: 50.0,
+                  onSelectedItemChanged: (index) {
+                    setState(() {
+                      selected_item = index;
+                      vibrate();
+                      _font = items[selected_item];
+                      setFontPref(items[selected_item]);
+                    });
+                  },
+                  children: new List<Widget>.generate(items.length, (index) {
+                    return new Center(
+                      child: Text(
+                        items[index],
+                        style: TextStyle(
+                          color: Color(_darkmode ? 0xFFFFFFFF : 0xFF000000),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+              ),
+            ),
+          ],
+        ));
   }
 }
 
