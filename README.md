@@ -4,4 +4,4 @@ An elegant, customizable, and accessable live transcription app that aims to bre
 
 | Dark theme    | Live Transcription |    Customize look & feel |   Light theme   |
 | ------------- | ------------- | ------------- | ------------- |
-| <img src="images/Screenshot_20210908-173934.jpg" width="250">  | <img src="images/Screenshot_20210908-173843.jpg" width="240">  | <img src="images/Screenshot_20210908-173900.jpg" width="245">  | <img src="images/Screenshot_20210908-173906.jpg" width="250"> |
+| <img src="images/Screenshot_20210908-173934.jpg" width="250">  | <img src="images/Screenshot_20210908-173843.jpg" width="250">  | <img src="images/Screenshot_20210908-173900.jpg" width="250">  | <img src="images/Screenshot_20210908-173906.jpg" width="250"> |
